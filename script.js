@@ -2,15 +2,18 @@
 
 // Our canvas
 const width = 750,
-  height = 300,
-  margin = 20
+height = 300,
+margin = 20
 marginLeft = 40
 
 // Drawing area
 let svg = d3.select('#results')
-  .append('svg')
-  .attr('width', width)
-  .attr('height', height)
+.append('svg')
+.attr('width', width)
+.attr('height', height)
+.style('background','lightgrey')
+.style('padding', '30px')
+.style('fill', 'teal')
 
 // Data reloading
 let reload = () => {
@@ -19,7 +22,6 @@ let reload = () => {
     rows.forEach(function(goal){
       data.push(goal.GoalsScored)
     })
-    console.log(data);
     redraw(data)
   });
 }
@@ -28,40 +30,56 @@ let reload = () => {
 let redraw = (data) => {
   // Your data to graph here
 
-  let temp = data.map((item)=>{
-    return parseInt(item)
-  })
-
-  let highest = Math.max(...temp)
-
   const yScale = d3.scaleLinear()
-    .domain([0,highest])
-    .range([0,height])
+  .domain([d3.max(data),0])
+  .range([0,height])
 
   const xScale = d3.scaleLinear()
-    .domain([0,data.length])
-    .range([0,width])
+  .domain([0,data.length])
+  .range([0,width])
+
+  const yAxis = d3.axisLeft(yScale)
+
+  const xAxis = d3.axisBottom(xScale).ticks(data.length)
 
   // let m = height / 4
-  svg.style('background', '#cacaca')
-     .selectAll('rect')
-     .data(data)
-     .enter()
-     .append('rect')
-     .attr('class', 'bar')
-     .attr('x', (d, i) => {
-       return xScale(i)
-     })
-     .attr('y', (d) => {
-       return height - yScale(d)
-     })
-     .attr('width', (i) => {
-      //  return xScale(i) - 2
-      return width/data.length - 2
-     })
-     .attr('height', (d)  => {
-       return yScale(d)
-     })
+  svg.selectAll('rect')
+  .data(data)
+  .enter()
+  .append('rect')
+  .attr('class', 'bar')
+  .attr('x', (d, i) => {
+    return xScale(i)
+  })
+  .attr('y', (d) => {
+    return height
+  })
+  .attr('width', (i) => {
+    return width/data.length - 2
+  })
+  .attr('height', 0)
+  .transition()
+  .duration(500)
+  .delay(function (d, i) {
+    return i * 50;
+  })
+  .attr('y', (d) => {
+    return yScale(d)
+  })
+  .attr('height', (d)  => {
+    return height - yScale(d)
+  })
+
+
+
+
+  svg.append('g')
+  .attr('transform','rotate(0)')
+  .call(yAxis)
+
+  svg.append('g')
+  .attr('transform',`translate(0,${height})`)
+  .call(xAxis)
 }
 
 reload()
